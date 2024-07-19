@@ -78,5 +78,8 @@ public class Product {
 	@OneToMany(mappedBy = "product")
 	private List<Image> images;
 	
+	@OneToMany(mappedBy = "product")
+	private List<Auction> auctions;
+	
 }
 
