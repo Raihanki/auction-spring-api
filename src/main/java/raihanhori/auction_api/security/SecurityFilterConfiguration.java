@@ -30,8 +30,11 @@ public class SecurityFilterConfiguration {
 		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		
 		http.authorizeHttpRequests(request -> {
+			
 			request.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-			.anyRequest().authenticated();
+			.requestMatchers(HttpMethod.GET, "/api/v1/users").authenticated()
+			
+			.anyRequest().permitAll();
 		});
 		
 		http.authenticationProvider(authenticationProvider);
