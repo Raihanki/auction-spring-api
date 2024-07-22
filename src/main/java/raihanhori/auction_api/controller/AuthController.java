@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import raihanhori.auction_api.helper.SuccessApiResponse;
-import raihanhori.auction_api.request.LoginRequest;
-import raihanhori.auction_api.request.RegisterRequest;
+import raihanhori.auction_api.request.auth.LoginRequest;
+import raihanhori.auction_api.request.auth.RegisterRequest;
 import raihanhori.auction_api.response.AuthResponse;
 import raihanhori.auction_api.service.AuthService;
 

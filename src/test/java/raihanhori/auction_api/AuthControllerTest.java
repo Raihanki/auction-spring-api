@@ -14,8 +14,8 @@ import raihanhori.auction_api.entity.User;
 import raihanhori.auction_api.helper.ErrorApiResponse;
 import raihanhori.auction_api.helper.SuccessApiResponse;
 import raihanhori.auction_api.repository.UserRepository;
-import raihanhori.auction_api.request.LoginRequest;
-import raihanhori.auction_api.request.RegisterRequest;
+import raihanhori.auction_api.request.auth.LoginRequest;
+import raihanhori.auction_api.request.auth.RegisterRequest;
 import raihanhori.auction_api.response.AuthResponse;
 
 import static org.junit.jupiter.api.Assertions.*;

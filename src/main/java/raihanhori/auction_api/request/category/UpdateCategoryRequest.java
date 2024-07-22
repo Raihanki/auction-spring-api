@@ -1,7 +1,8 @@
-package raihanhori.auction_api.request;
+package raihanhori.auction_api.request.category;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LoginRequest {
+public class UpdateCategoryRequest {
 
-	@NotBlank
-	@Size(max = 200)
-	private String email;
+	@JsonIgnore
+	private Long id;
 	
 	@NotBlank
-	private String password;
+	private String name;
 	
 }
