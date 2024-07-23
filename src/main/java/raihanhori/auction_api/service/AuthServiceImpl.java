@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import raihanhori.auction_api.entity.Role;
 import raihanhori.auction_api.entity.User;
 import raihanhori.auction_api.helper.ValidationHelper;
 import raihanhori.auction_api.repository.UserRepository;
@@ -68,11 +69,17 @@ public class AuthServiceImpl implements AuthService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is already used");
 		}
 		
+		String role = request.getRole();
+		if (!role.equals("USER") && !role.equals("OWNER")) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "role can only be USER or OWNER");
+		}
+		
 		User user = new User();
 		user.setEmail(request.getEmail());
 		user.setName(request.getName());
 		user.setPassword(encoder.encode(request.getPassword()));
 		user.setVerified(false);
+		user.setRole(Role.valueOf(role));
 		userRepository.save(user);
 		
 		String token = jwtUtils.generateToken(user);

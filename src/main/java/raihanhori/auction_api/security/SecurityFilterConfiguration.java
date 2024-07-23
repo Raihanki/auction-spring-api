@@ -34,6 +34,7 @@ public class SecurityFilterConfiguration {
 			request.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
 			.requestMatchers("/api/v1/categories").hasAuthority("ADMIN")
 			.requestMatchers(HttpMethod.GET, "/api/v1/users").authenticated()
+			.requestMatchers("/api/v1/products").authenticated()
 			
 			.anyRequest().permitAll();
 		});
