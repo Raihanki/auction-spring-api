@@ -79,12 +79,21 @@ public class ProductControllerTest {
 	
 	private User user;
 	
+	private User owner;
+	
 	private String token;
+	
+	private String tokenOwner;
 	
 	private Category category;
 	
 	@BeforeEach
 	void setUp() {
+		imageRepository.deleteAll();
+		productRepository.deleteAll();
+		categoryRepository.deleteAll();
+		userRepository.deleteAll();
+		
 		user = new User();
 		user.setEmail("test@example.com");
 		user.setPassword(passwordEncoder.encode("password"));
@@ -92,7 +101,15 @@ public class ProductControllerTest {
 		user.setRole(Role.ADMIN);
 		userRepository.save(user);
 		
+		owner = new User();
+		owner.setEmail("own@example.com");
+		owner.setPassword(passwordEncoder.encode("password"));
+		owner.setName("owner");
+		owner.setRole(Role.OWNER);
+		userRepository.save(owner);
+		
 		token = jwtUtils.generateToken(user);
+		tokenOwner = jwtUtils.generateToken(owner);
 		
 		category = categoryRepository.save(Category.builder().name("test").build());
 	}
@@ -123,10 +140,10 @@ public class ProductControllerTest {
 	            .param("startPrice", "100000")
 	            .param("priceMultiples", "20000")
 	            .param("currency", "IDR")
-	            .param("endAuctionDate", "2024-07-24")
+	            .param("endAuctionDate", "2024-07-26")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + token)
+				.header("Authorization", "Bearer " + tokenOwner)
 		).andExpect(status().isCreated())
 		.andDo(result -> {
 			SuccessApiResponse<String> response = 
@@ -142,7 +159,7 @@ public class ProductControllerTest {
 			assertEquals(new BigDecimal("100000.00"), createdProduct.getStartPrice());
 			assertEquals(new BigDecimal("20000.00"), createdProduct.getPriceMultiples());
 			assertEquals(Currency.IDR, createdProduct.getCurrency());
-			assertEquals(Date.from(LocalDate.of(2024, 7, 24).atStartOfDay(ZoneId.systemDefault()).toInstant()), createdProduct.getEndAuctionDate());
+			assertEquals(Date.from(LocalDate.of(2024, 7, 26).atStartOfDay(ZoneId.systemDefault()).toInstant()), createdProduct.getEndAuctionDate());
 			
 			 List<Image> images = imageRepository.findAllByProduct_Id(createdProduct.getId());
 			 assertEquals(2, images.size());
@@ -164,7 +181,7 @@ public class ProductControllerTest {
 	            .param("endAuctionDate", "2024-07-24")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + token)
+				.header("Authorization", "Bearer " + tokenOwner)
 		).andExpect(status().isBadRequest())
 		.andDo(result -> {
 			ErrorApiResponse response = 
@@ -185,7 +202,7 @@ public class ProductControllerTest {
 		
 		Product product = new Product();
 		product.setCategory(category);
-		product.setOwner(user);
+		product.setOwner(owner);
 		product.setName("test");
 		product.setDescription("test");
 		product.setStartPrice(new BigDecimal("100000.00"));
@@ -213,7 +230,7 @@ public class ProductControllerTest {
 	            .param("endPrice", "300")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + token)
+				.header("Authorization", "Bearer " + tokenOwner)
 		).andExpect(status().isOk())
 		.andDo(result -> {
 			SuccessApiResponse<String> response = 
@@ -251,13 +268,13 @@ public class ProductControllerTest {
 		
 		Product product = new Product();
 		product.setCategory(category);
-		product.setOwner(user);
+		product.setOwner(owner);
 		product.setName("test");
 		product.setDescription("test");
 		product.setStartPrice(new BigDecimal("100000.00"));
 		product.setPriceMultiples(new BigDecimal("10000.00"));
 		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 24).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 25).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 		productRepository.save(product);
 		
 		imageRepository.save(Image.builder().product(product).imageUrl(savedPath).build());
@@ -266,7 +283,7 @@ public class ProductControllerTest {
 				delete("/api/v1/products/" + product.getId())
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + token)
+				.header("Authorization", "Bearer " + tokenOwner)
 		).andExpect(status().isOk())
 		.andDo(result -> {
 			SuccessApiResponse<String> response = 

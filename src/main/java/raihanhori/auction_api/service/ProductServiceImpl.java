@@ -85,6 +85,10 @@ public class ProductServiceImpl implements ProductService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "end auction time should be after start date");
 		}
 		
+		if (request.getImages().length > 3) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "maximum file upload is only 3");
+		}
+		
 		Product product = new Product();
 		product.setOwner(user);
 		product.setCategory(category);
@@ -136,6 +140,10 @@ public class ProductServiceImpl implements ProductService {
 		
 		if (request.getEndAuctionDate().toInstant().isBefore(product.getCreatedAt())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "end auction time should be after start date");
+		}
+		
+		if (request.getImages().length > 3) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "maximum file upload is only 3");
 		}
 		
 		product.setOwner(user);

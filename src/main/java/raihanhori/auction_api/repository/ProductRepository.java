@@ -23,4 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	
 	Optional<Product> findFirstByName(String name);
 	
+	@Query("SELECT p FROM Product p WHERE p.id = :productId")
+	Optional<Product> findByIdWithoutRelation(@Param("productId") Long productId);
+	
 }
