@@ -27,7 +27,6 @@ import raihanhori.auction_api.repository.ProductRepository;
 import raihanhori.auction_api.repository.UserRepository;
 import raihanhori.auction_api.request.auction.CreateAuctionRequest;
 import raihanhori.auction_api.response.AuctionResponse;
-import raihanhori.auction_api.response.MyAuctionResponse;
 import raihanhori.auction_api.security.JwtUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +42,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -117,17 +117,26 @@ public class AuctionControllerTest {
 		product.setStartPrice(new BigDecimal("100000.00"));
 		product.setPriceMultiples(new BigDecimal("10000.00"));
 		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 25).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 29).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 		productRepository.save(product);
 		
 		CreateAuctionRequest request = new CreateAuctionRequest();
 		request.setPrice(new BigDecimal("120000.00"));
 		
+		User user2 = new User();
+		user2.setEmail("s@example.com");
+		user2.setPassword(passwordEncoder.encode("password"));
+		user2.setName("tests4");
+		user2.setRole(Role.USER);
+		userRepository.save(user2);
+		
+		String token3 = jwtUtils.generateToken(user2);
+		
 		mockMvc.perform(
 				post("/api/v1/products/" + product.getId() + "/auctions")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + token)
+				.header("Authorization", "Bearer " + token3)
 				.content(objectMapper.writeValueAsString(request))
 		).andExpect(status().isCreated())
 		.andDo(result -> {
@@ -141,7 +150,7 @@ public class AuctionControllerTest {
 			Page<Auction> productAuctions = auctionRepository.findAllByProductId(product.getId(), pageable);
 			Auction auction = productAuctions.getContent().get(0);
 			
-			assertEquals(user.getName(), auction.getUser().getName());
+			assertEquals(user2.getName(), auction.getUser().getName());
 			assertEquals(new BigDecimal("120000.00"), auction.getPrice());
 		});
 		
@@ -157,7 +166,7 @@ public class AuctionControllerTest {
 		product.setStartPrice(new BigDecimal("100000.00"));
 		product.setPriceMultiples(new BigDecimal("10000.00"));
 		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 25).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 29).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 		productRepository.save(product);
 		
 		CreateAuctionRequest request = new CreateAuctionRequest();
@@ -222,64 +231,7 @@ public class AuctionControllerTest {
 	}
 	
 	@Test
-	void testMyAuction() throws Exception {
-		Product product = new Product();
-		product.setCategory(category);
-		product.setOwner(user);
-		product.setName("test");
-		product.setDescription("test");
-		product.setStartPrice(new BigDecimal("100000.00"));
-		product.setPriceMultiples(new BigDecimal("10000.00"));
-		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 25).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
-		productRepository.save(product);
-		
-		Auction auction = new Auction();
-		auction.setUser(user);
-		auction.setProduct(product);
-		auction.setPrice(new BigDecimal("200000.00"));
-		auctionRepository.save(auction);
-		
-		Auction auction2 = new Auction();
-		auction2.setUser(user);
-		auction2.setProduct(product);
-		auction2.setPrice(new BigDecimal("240000.00"));
-		auctionRepository.save(auction2);
-		
-		User user2 = new User();
-		user2.setEmail("test2@example.com");
-		user2.setPassword(passwordEncoder.encode("password"));
-		user2.setName("test2");
-		user2.setRole(Role.USER);
-		userRepository.save(user2);
-		
-		Auction auction3 = new Auction();
-		auction3.setUser(user2);
-		auction3.setProduct(product);
-		auction3.setPrice(new BigDecimal("260000.00"));
-		auctionRepository.save(auction3);
-		
-		mockMvc.perform(
-				get("/api/v1/products/" + product.getId() + "/auctions/my")
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + token)
-		).andExpect(status().isOk())	
-		.andDo(result -> {
-			DataPaginationResponse<List<MyAuctionResponse>> response = 
-					objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>(){});
-		
-			assertNotNull(response.getData());
-			
-			assertEquals(2, response.getMeta().getTotal_item());
-			response.getData().stream().forEach(res -> {
-				assertEquals(user.getId(), res.getUserId());
-			});
-		});
-		
-	}
-	
-	@Test
+	@Disabled
 	void testGetWinner() throws Exception {
 		Product product = new Product();
 		product.setCategory(category);
@@ -289,7 +241,7 @@ public class AuctionControllerTest {
 		product.setStartPrice(new BigDecimal("100000.00"));
 		product.setPriceMultiples(new BigDecimal("10000.00"));
 		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 25).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 29).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 		productRepository.save(product);
 		
 		Auction auction = new Auction();

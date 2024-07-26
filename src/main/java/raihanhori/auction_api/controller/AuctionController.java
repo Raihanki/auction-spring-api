@@ -24,7 +24,6 @@ import raihanhori.auction_api.helper.SuccessApiResponse;
 import raihanhori.auction_api.request.auction.CreateAuctionRequest;
 import raihanhori.auction_api.request.auction.GetAuctionRequest;
 import raihanhori.auction_api.response.AuctionResponse;
-import raihanhori.auction_api.response.MyAuctionResponse;
 import raihanhori.auction_api.service.AuctionService;
 
 @RestController
@@ -85,33 +84,6 @@ public class AuctionController {
 		return SuccessApiResponse.<String>builder()
 				.status(200)
 				.data("successfully deleted")
-				.build();
-	}
-	
-	@GetMapping(path = "/my", produces = MediaType.APPLICATION_JSON_VALUE)
-	public DataPaginationResponse<List<MyAuctionResponse>> myAuctions(
-			@RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page
-		) {
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		GetAuctionRequest request = GetAuctionRequest.builder()
-				.limit(limit)
-				.page(page)
-				.build();
-		
-		Page<MyAuctionResponse> auctions = auctionService.getMyAuction(request, user);
-		
-		PaginationData paginationData = PaginationData.builder()
-				.current_page(auctions.getNumber() + 1)
-				.total_page(auctions.getTotalPages())
-				.total_item(auctions.getTotalElements())
-				.total_item_per_page(auctions.getSize())
-				.build();
-		
-		return DataPaginationResponse.<List<MyAuctionResponse>>builder()
-				.status(200)
-				.data(auctions.getContent())
-				.meta(paginationData)
 				.build();
 	}
 	

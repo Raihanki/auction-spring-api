@@ -21,9 +21,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	           "WHERE (:name IS NULL OR p.name LIKE %:name%)")
 	Page<Product> getAndSearchProduct(@Param("name") String name, Pageable pageable);
 	
+	@Query("SELECT p FROM Product p " +
+	           "JOIN FETCH p.category c " +
+	           "JOIN FETCH p.owner o " +
+	           "LEFT JOIN FETCH p.winnerUser w " +
+	           "WHERE (:name IS NULL OR p.name LIKE %:name%)" +
+	           "AND o.id = :userId")
+	Page<Product> getByUserIdAndSearchProduct(@Param("name") String name, @Param("userId") Long userId, Pageable pageable);
+	
 	Optional<Product> findFirstByName(String name);
 	
-	@Query("SELECT p FROM Product p WHERE p.id = :productId")
+	@Query("SELECT p FROM Product p JOIN User u ON p.owner.id = u.id WHERE p.id = :productId")
 	Optional<Product> findByIdWithoutRelation(@Param("productId") Long productId);
 	
 }

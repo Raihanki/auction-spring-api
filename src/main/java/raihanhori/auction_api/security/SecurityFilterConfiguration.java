@@ -32,7 +32,9 @@ public class SecurityFilterConfiguration {
 		http.authorizeHttpRequests(request -> {
 			
 			request.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-			.requestMatchers("/api/v1/categories").hasAuthority("ADMIN")
+			.requestMatchers(HttpMethod.POST, "/api/v1/categories").hasAuthority("ADMIN")
+			.requestMatchers(HttpMethod.PATCH, "/api/v1/categories/*").hasAuthority("ADMIN")
+			.requestMatchers(HttpMethod.DELETE, "/api/v1/categories/*").hasAuthority("ADMIN")
 			.requestMatchers(HttpMethod.GET, "/api/v1/users").authenticated()
 			.requestMatchers(HttpMethod.POST, "/api/v1/products/*").hasAuthority("OWNER")
 			.requestMatchers(HttpMethod.DELETE, "/api/v1/products/*").hasAuthority("OWNER")

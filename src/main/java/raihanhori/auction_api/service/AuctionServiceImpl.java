@@ -1,7 +1,9 @@
 package raihanhori.auction_api.service;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List; 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -53,11 +55,27 @@ public class AuctionServiceImpl implements AuctionService {
 	public void create(CreateAuctionRequest request, User user) {
 		Product product = this.getProductById(request.getProductId());
 
+		if (product.getOwner().getId().equals(user.getId())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you cant bid your own product");
+		}
+
 		if (product.getWinnerUser() != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "auction is already have a winner");
 		}
+		
+		if (product.getEndAuctionDate().toInstant().isBefore(Instant.now())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "auction is ended");
+		}
 
-		Auction lastAuction = auctionRepository.findFirstByProductIdOrderByIdDescForRead(product.getId()).orElse(null);
+		Pageable pageable = PageRequest.of(0, 1, Sort.by("price").descending());
+		
+		Page<Auction> lastAuctions = auctionRepository.findFirstByProductIdOrderByIdDescForRead(product.getId(), pageable);
+		
+		Auction lastAuction = null;
+		if (lastAuctions.getContent().size() > 0) {
+			lastAuction = lastAuctions.getContent().get(0);
+		}
+
 		if (lastAuction != null && lastAuction.getPrice().compareTo(request.getPrice()) >= 0) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you need to put higher price");
 		} else {
@@ -78,6 +96,9 @@ public class AuctionServiceImpl implements AuctionService {
 		auction.setUser(user);
 		auction.setPrice(request.getPrice());
 		auctionRepository.save(auction);
+		
+		product.setEndPrice(request.getPrice());
+		productRepository.save(product);
 	}
 
 	@Override
@@ -92,7 +113,7 @@ public class AuctionServiceImpl implements AuctionService {
 
 	@Override
 	public Page<MyAuctionResponse> getMyAuction(GetAuctionRequest request, User user) {
-		Pageable pageable = PageRequest.of(request.getPage() + 1, request.getLimit(),
+		Pageable pageable = PageRequest.of(request.getPage() - 1, request.getLimit(),
 				Sort.by("createdAt").descending());
 
 		Page<Auction> auctions = auctionRepository.findAuctionByUserId(user.getId(), pageable);
@@ -105,14 +126,19 @@ public class AuctionServiceImpl implements AuctionService {
 	
 	@Override
 	public AuctionResponse winnerAuction(Long productId) {
-		this.getProductById(productId);
+		Product product = this.getProductById(productId);
 		
-		Pageable pageable = PageRequest.of(0, 1, Sort.by("id").descending());
+		Pageable pageable = PageRequest.of(0, 1, Sort.by("price").descending());
 		
-		List<Auction> auctions = auctionRepository.findWinner(productId, pageable);
-		Auction auction = auctions.get(0);
+		if (product.getEndAuctionDate().before(new Date())) {
+			Page<Auction> auctions = auctionRepository.findWinner(productId, pageable);
+			if (auctions.getContent().size() > 0) {
+				Auction auction = auctions.getContent().get(0);
+				return toAuctionResponse(auction);
+			}
+		}
 		
-		return toAuctionResponse(auction);
+		return null;
 	}
 
 	private Product getProductById(Long productId) {

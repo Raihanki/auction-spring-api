@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import raihanhori.auction_api.entity.Auction;
 import raihanhori.auction_api.entity.Category;
 import raihanhori.auction_api.entity.Currency;
 import raihanhori.auction_api.entity.Image;
@@ -19,6 +20,7 @@ import raihanhori.auction_api.entity.User;
 import raihanhori.auction_api.helper.DataPaginationResponse;
 import raihanhori.auction_api.helper.ErrorApiResponse;
 import raihanhori.auction_api.helper.SuccessApiResponse;
+import raihanhori.auction_api.repository.AuctionRepository;
 import raihanhori.auction_api.repository.CategoryRepository;
 import raihanhori.auction_api.repository.ImageRepository;
 import raihanhori.auction_api.repository.ProductRepository;
@@ -72,10 +74,22 @@ public class ProductControllerTest {
 	private ImageService imageService;
 	
 	@Autowired
+	private AuctionRepository auctionRepository;
+	
+	@Autowired
 	private ObjectMapper objectMapper;
 	
 	@Autowired
 	private JwtUtils jwtUtils;
+	
+//	@Autowired
+//	private ChooseAuctionWinnerJob chooseAuctionWinnerJob;
+	
+//	@Autowired
+//	Scheduler scheduler;
+	
+//	@MockBean
+//	private ProductServiceImpl productServiceImpl;
 	
 	private User user;
 	
@@ -89,6 +103,7 @@ public class ProductControllerTest {
 	
 	@BeforeEach
 	void setUp() {
+		auctionRepository.deleteAll();
 		imageRepository.deleteAll();
 		productRepository.deleteAll();
 		categoryRepository.deleteAll();
@@ -116,6 +131,7 @@ public class ProductControllerTest {
 	
 	@AfterEach
 	void tearDown() {
+		auctionRepository.deleteAll();
 		imageRepository.deleteAll();
 		productRepository.deleteAll();
 		categoryRepository.deleteAll();
@@ -124,6 +140,13 @@ public class ProductControllerTest {
 	
 	@Test
 	void testCreateSuccess() throws Exception {
+//		Scheduler mockScheduler = mock(Scheduler.class);
+//		
+//		ProductServiceImpl service = spy(new ProductServiceImpl());
+//	    service.setScheduler(mockScheduler);
+//	    
+//	    doReturn(mockScheduler).when(service).getScheduler();
+		
 		Path path1 = Paths.get("/Users/raihanhori/dev/java/tes-upload1.png");
 		Path path2 = Paths.get("/Users/raihanhori/dev/java/tes-upload2.png");
 		
@@ -140,7 +163,7 @@ public class ProductControllerTest {
 	            .param("startPrice", "100000")
 	            .param("priceMultiples", "20000")
 	            .param("currency", "IDR")
-	            .param("endAuctionDate", "2024-07-26")
+	            .param("endAuctionDate", "2024-07-27 00:00:00")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
 				.accept(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer " + tokenOwner)
@@ -159,13 +182,45 @@ public class ProductControllerTest {
 			assertEquals(new BigDecimal("100000.00"), createdProduct.getStartPrice());
 			assertEquals(new BigDecimal("20000.00"), createdProduct.getPriceMultiples());
 			assertEquals(Currency.IDR, createdProduct.getCurrency());
-			assertEquals(Date.from(LocalDate.of(2024, 7, 26).atStartOfDay(ZoneId.systemDefault()).toInstant()), createdProduct.getEndAuctionDate());
+			assertEquals(Date.from(LocalDate.of(2024, 7, 27).atStartOfDay(ZoneId.systemDefault()).toInstant()), createdProduct.getEndAuctionDate());
 			
 			 List<Image> images = imageRepository.findAllByProduct_Id(createdProduct.getId());
 			 assertEquals(2, images.size());
 			 
 			 images.forEach(image -> imageService.delete(image.getImageUrl()));
+			 
+			 Auction auction = new Auction();
+			 auction.setUser(user);
+			 auction.setProduct(createdProduct);
+			 auction.setPrice(new BigDecimal("200000.00"));
+			 auctionRepository.save(auction);
+			 
+//			 // Verify that ProductServiceImpl.create is called correctly
+//			 verify(productServiceImpl, times(1)).create(any(CreateProductRequest.class));
+//
+//			 // Verify that scheduler.scheduleJob is called
+//			 verify(mockScheduler, times(1)).scheduleJob(any(JobDetail.class), any(Trigger.class));
 		});
+		
+//		//Manually execute the job to verify its functionality
+//		Product product = productRepository.findFirstByName("test").orElse(null);
+//        JobDetail jobDetail = JobBuilder.newJob(ChooseAuctionWinnerJob.class)
+//                .withIdentity("auctionEndJob_1", "auctionJobs")
+//                .usingJobData("productId", product.getId())
+//                .build();
+//
+//        Trigger trigger = TriggerBuilder.newTrigger()
+//                .withIdentity("auctionEndTrigger_1", "auctionTriggers")
+//                .startNow()
+//                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
+//                .build();
+//   
+//        // Schedule and execute the job manually
+//        scheduler.scheduleJob(jobDetail, trigger);
+//        
+//        Thread.sleep(3000L);
+//        // Verify the effect of job execution
+//        assertNotNull(product.getWinnerUser());
 	}
 	
 	@Test
@@ -178,7 +233,7 @@ public class ProductControllerTest {
 	            .param("startPrice", "")
 	            .param("priceMultiples", "")
 	            .param("currency", "IDR")
-	            .param("endAuctionDate", "2024-07-24")
+	            .param("endAuctionDate", "2024-07-24 00:00:00")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
 				.accept(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer " + tokenOwner)
@@ -187,11 +242,13 @@ public class ProductControllerTest {
 			ErrorApiResponse response = 
 					objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>(){});
 			assertNotNull(response.getMessage());
+			
 		});
 	}
 	
 	@Test
-	void testUpdateSuccess() throws Exception {
+	void testUpdateSuccess() throws Exception {	
+		
 		Path path1 = Paths.get("/Users/raihanhori/dev/java/tes-upload1.png");
 		Path path2 = Paths.get("/Users/raihanhori/dev/java/tes-upload2.png");
 		
@@ -208,7 +265,7 @@ public class ProductControllerTest {
 		product.setStartPrice(new BigDecimal("100000.00"));
 		product.setPriceMultiples(new BigDecimal("10000.00"));
 		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 24).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 27).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 		productRepository.save(product);
 		
 		imageRepository.save(Image.builder().product(product).imageUrl(savedPath).build());
@@ -225,7 +282,7 @@ public class ProductControllerTest {
 	            .param("startPrice", "100")
 	            .param("priceMultiples", "10")
 	            .param("currency", "USD")
-	            .param("endAuctionDate", "2024-07-25")
+	            .param("endAuctionDate", "2024-07-28 00:00:00")
 	            .param("winnerUserId", user.getId().toString())
 	            .param("endPrice", "300")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
@@ -251,7 +308,7 @@ public class ProductControllerTest {
 			assertEquals(Currency.USD, updatedProduct.getCurrency());
 			assertEquals(user.getId(), updatedProduct.getWinnerUser().getId());
 			assertEquals(new BigDecimal("300.00"), updatedProduct.getEndPrice());
-			assertEquals(Date.from(LocalDate.of(2024, 7, 25).atStartOfDay(ZoneId.systemDefault()).toInstant()), updatedProduct.getEndAuctionDate());
+			assertEquals(Date.from(LocalDate.of(2024, 7, 28).atStartOfDay(ZoneId.systemDefault()).toInstant()), updatedProduct.getEndAuctionDate());
 			
 			imageService.getImagesByProductId(updatedProduct.getId())
 				.forEach(image -> imageService.delete(image.getImageUrl()));

@@ -20,4 +20,6 @@ public interface ProductService {
 	
 	void delete(Long productId, User user);
 	
+	Page<ProductResponse> getMyProduct(GetProductRequest request);
+	
 }

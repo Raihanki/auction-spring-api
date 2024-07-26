@@ -6,6 +6,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,6 +30,7 @@ import raihanhori.auction_api.entity.Image;
 import raihanhori.auction_api.entity.Product;
 import raihanhori.auction_api.entity.User;
 import raihanhori.auction_api.helper.ValidationHelper;
+import raihanhori.auction_api.job.ChooseAuctionWinnerJob;
 import raihanhori.auction_api.repository.CategoryRepository;
 import raihanhori.auction_api.repository.ProductRepository;
 import raihanhori.auction_api.repository.UserRepository;
@@ -52,6 +59,9 @@ public class ProductServiceImpl implements ProductService {
 	
 	@Autowired
 	private ImageService imageService;
+	
+	@Autowired
+	private Scheduler scheduler;
 
 	@Override
 	public Page<ProductResponse> getAll(GetProductRequest request) {
@@ -61,6 +71,23 @@ public class ProductServiceImpl implements ProductService {
 		
 		Page<Product> products = 
 				productRepository.getAndSearchProduct(request.getSearch(), pageable);
+		
+		List<ProductResponse> productList = products.stream().map(product -> toProductResponse(product)).toList();
+		
+		return new PageImpl<ProductResponse>(productList, pageable, products.getTotalElements());
+	}
+	
+	@Override
+	public Page<ProductResponse> getMyProduct(GetProductRequest request) {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal();
+		
+		int page = (request.getPage() != null) ? request.getPage() - 1 : 0;
+		int limit = (request.getLimit() != null) ? request.getLimit() : 10;
+		Pageable pageable = PageRequest.of(page, limit, Sort.by("id").ascending());
+		
+		Page<Product> products = 
+				productRepository.getByUserIdAndSearchProduct(request.getSearch(), user.getId(), pageable);
 		
 		List<ProductResponse> productList = products.stream().map(product -> toProductResponse(product)).toList();
 		
@@ -109,6 +136,8 @@ public class ProductServiceImpl implements ProductService {
 		
 		images.forEach(image -> imageService.saveDatabase(image));
 		product.setImages(images);
+		
+		this.scheduleAuctionEndJob(product);
 	}
 
 	@Transactional
@@ -146,6 +175,11 @@ public class ProductServiceImpl implements ProductService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "maximum file upload is only 3");
 		}
 		
+		boolean isEndAuctionDateChange = false;
+		if (!new Timestamp(request.getEndAuctionDate().getTime()).equals(product.getEndAuctionDate())) {
+			isEndAuctionDateChange = true;
+		}
+		
 		product.setOwner(user);
 		product.setCategory(category);
 		product.setName(request.getName());
@@ -158,19 +192,25 @@ public class ProductServiceImpl implements ProductService {
 		product.setWinnerUser(userWinner);
 		productRepository.save(product);
 		
-		imageService.getImagesByProductId(product.getId()).stream().forEach(image -> {
-			imageService.delete(image.getImageUrl());
-			imageService.deleteDatabase(image);
-		});
-		
-		List<Image> images = new ArrayList<Image>();
-		Arrays.asList(request.getImages()).stream().forEach(file -> {
-			String filePath = imageService.savePublic(file);
-			images.add(Image.builder().product(product).imageUrl(filePath).build());
-		});
-		
-		images.forEach(image -> imageService.saveDatabase(image));
-		product.setImages(images);
+		if (request.getImages().length > 0) {
+			imageService.getImagesByProductId(product.getId()).stream().forEach(image -> {
+				imageService.delete(image.getImageUrl());
+				imageService.deleteDatabase(image);
+			});
+			
+			List<Image> images = new ArrayList<Image>();
+			Arrays.asList(request.getImages()).stream().forEach(file -> {
+				String filePath = imageService.savePublic(file);
+				images.add(Image.builder().product(product).imageUrl(filePath).build());
+			});
+			
+			images.forEach(image -> imageService.saveDatabase(image));
+			product.setImages(images);
+			
+			if (isEndAuctionDateChange) {
+				this.scheduleAuctionEndJob(product);
+			}
+		}
 	}
 
 	@Transactional
@@ -235,5 +275,24 @@ public class ProductServiceImpl implements ProductService {
 			.images(images)
 			.build();
 	}
+	
+	private void scheduleAuctionEndJob(Product product) {
+        try {
+            JobDetail jobDetail = JobBuilder.newJob(ChooseAuctionWinnerJob.class)
+                .withIdentity("auctionEndJob_" + product.getId(), "auctionJobs")
+                .usingJobData("productId", product.getId())
+                .build();
+
+            Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("auctionEndTrigger_" + product.getId(), "auctionTriggers")
+                .startAt(Date.from(product.getEndAuctionDate().toInstant()))
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withMisfireHandlingInstructionFireNow())
+                .build();
+
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

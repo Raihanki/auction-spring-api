@@ -55,7 +55,7 @@ public class UpdateProductRequest {
 	@NotBlank
 	private String currency;
 	
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@NotNull
 	private Date endAuctionDate;
 	

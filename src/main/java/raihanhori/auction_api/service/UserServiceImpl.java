@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 				.name(user.getName())
 				.email(user.getEmail())
 				.isVerified(user.isVerified())
+				.createdAt(user.getCreatedAt())
 				.build();
 	}
 
