@@ -163,7 +163,7 @@ public class ProductControllerTest {
 	            .param("startPrice", "100000")
 	            .param("priceMultiples", "20000")
 	            .param("currency", "IDR")
-	            .param("endAuctionDate", "2024-07-27 00:00:00")
+	            .param("endAuctionDate", "2024-11-05 00:00:00")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
 				.accept(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer " + tokenOwner)
@@ -182,7 +182,7 @@ public class ProductControllerTest {
 			assertEquals(new BigDecimal("100000.00"), createdProduct.getStartPrice());
 			assertEquals(new BigDecimal("20000.00"), createdProduct.getPriceMultiples());
 			assertEquals(Currency.IDR, createdProduct.getCurrency());
-			assertEquals(Date.from(LocalDate.of(2024, 7, 27).atStartOfDay(ZoneId.systemDefault()).toInstant()), createdProduct.getEndAuctionDate());
+			assertEquals(Date.from(LocalDate.of(2024, 11, 05).atStartOfDay(ZoneId.systemDefault()).toInstant()), createdProduct.getEndAuctionDate());
 			
 			 List<Image> images = imageRepository.findAllByProduct_Id(createdProduct.getId());
 			 assertEquals(2, images.size());
@@ -265,7 +265,7 @@ public class ProductControllerTest {
 		product.setStartPrice(new BigDecimal("100000.00"));
 		product.setPriceMultiples(new BigDecimal("10000.00"));
 		product.setCurrency(Currency.IDR);
-		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 7, 27).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
+		product.setEndAuctionDate(new Timestamp(Date.from(LocalDate.of(2024, 11, 02).atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime()));
 		productRepository.save(product);
 		
 		imageRepository.save(Image.builder().product(product).imageUrl(savedPath).build());
@@ -282,7 +282,7 @@ public class ProductControllerTest {
 	            .param("startPrice", "100")
 	            .param("priceMultiples", "10")
 	            .param("currency", "USD")
-	            .param("endAuctionDate", "2024-07-28 00:00:00")
+	            .param("endAuctionDate", "2024-11-03 00:00:00")
 	            .param("winnerUserId", user.getId().toString())
 	            .param("endPrice", "300")
 				.contentType(MediaType.MULTIPART_FORM_DATA)
@@ -308,7 +308,7 @@ public class ProductControllerTest {
 			assertEquals(Currency.USD, updatedProduct.getCurrency());
 			assertEquals(user.getId(), updatedProduct.getWinnerUser().getId());
 			assertEquals(new BigDecimal("300.00"), updatedProduct.getEndPrice());
-			assertEquals(Date.from(LocalDate.of(2024, 7, 28).atStartOfDay(ZoneId.systemDefault()).toInstant()), updatedProduct.getEndAuctionDate());
+			assertEquals(Date.from(LocalDate.of(2024, 11, 03).atStartOfDay(ZoneId.systemDefault()).toInstant()), updatedProduct.getEndAuctionDate());
 			
 			imageService.getImagesByProductId(updatedProduct.getId())
 				.forEach(image -> imageService.delete(image.getImageUrl()));
