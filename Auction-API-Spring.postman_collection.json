@@ -1,0 +1,606 @@
+{
+	"info": {
+		"_postman_id": "6761e708-79d9-4939-93d4-4acfa64e40f4",
+		"name": "Auction-API-Spring",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7777643"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\" : \"raihan\",\n    \"email\" : \"r@gmail.com\",\n    \"password\" : \"password\",\n    \"role\":  \"USER\" //USER or OWNER(for create product)\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/v1/auth/register",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\" : \"r@gmail.com\",\n    \"password\" : \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/v1/auth/login",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "categoryId",
+									"value": "658",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "buku belajar python",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "buku belajar python",
+									"type": "text"
+								},
+								{
+									"key": "startPrice",
+									"value": "200000",
+									"type": "text"
+								},
+								{
+									"key": "priceMultiples",
+									"value": "10000",
+									"type": "text"
+								},
+								{
+									"key": "currency",
+									"value": "IDR",
+									"type": "text"
+								},
+								{
+									"key": "endAuctionDate",
+									"value": "2024-07-27 14:00:00",
+									"type": "text"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": [
+										"/Users/raihanhori/dev/go/screenshot_materi/Screenshot 2024-03-27 at 12.00.31.png",
+										"/Users/raihanhori/dev/go/screenshot_materi/Screenshot 2024-03-27 at 13.04.56.png"
+									]
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}products",
+							"host": [
+								"{{local}}products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "categoryId",
+									"value": "658",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "buku belajar python",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "buku belajar python",
+									"type": "text"
+								},
+								{
+									"key": "startPrice",
+									"value": "200000",
+									"type": "text"
+								},
+								{
+									"key": "priceMultiples",
+									"value": "10000",
+									"type": "text"
+								},
+								{
+									"key": "currency",
+									"value": "IDR",
+									"type": "text"
+								},
+								{
+									"key": "endAuctionDate",
+									"value": "2024-07-26 15:25:00",
+									"type": "text"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "/Users/raihanhori/Downloads/WhatsApp Image 2024-03-23 at 2.07.30 PM.jpeg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{local}}products/:productId",
+							"host": [
+								"{{local}}products"
+							],
+							"path": [
+								":productId"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "359"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local}}products/:productId",
+							"host": [
+								"{{local}}products"
+							],
+							"path": [
+								":productId"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detail Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}products/:productId",
+							"host": [
+								"{{local}}products"
+							],
+							"path": [
+								":productId"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "359"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}products?name=&limit=&page=",
+							"host": [
+								"{{local}}products"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": ""
+								},
+								{
+									"key": "limit",
+									"value": ""
+								},
+								{
+									"key": "page",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"programming\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}categories",
+							"host": [
+								"{{local}}categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"sport\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}categories/:categoryId",
+							"host": [
+								"{{local}}categories"
+							],
+							"path": [
+								":categoryId"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{local}}categories/:categoryId",
+							"host": [
+								"{{local}}categories"
+							],
+							"path": [
+								":categoryId"
+							],
+							"variable": [
+								{
+									"key": "categoryId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}categories",
+							"host": [
+								"{{local}}categories"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auctions",
+			"item": [
+				{
+					"name": "Get Bid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}products/:productId/auctions",
+							"host": [
+								"{{local}}products"
+							],
+							"path": [
+								":productId",
+								"auctions"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "359"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Auctions Winner",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}products/:productId/auctions/winner",
+							"host": [
+								"{{local}}products"
+							],
+							"path": [
+								":productId",
+								"auctions",
+								"winner"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "359"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bid",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJyQGdtYWlsLmNvbSIsImlhdCI6MTcyMTk3NzAyNywiZXhwIjoxNzIyMDYzNDI3fQ.0GA9iDAXLqJbBo-z4yuhJn_Lxjd49v3Zm60y3WloOrsTFnxUnTFYnyRws3ag0xY8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 450000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{local}}products/:productId/auctions",
+							"host": [
+								"{{local}}products"
+							],
+							"path": [
+								":productId",
+								"auctions"
+							],
+							"variable": [
+								{
+									"key": "productId",
+									"value": "359"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}users",
+							"host": [
+								"{{local}}users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}users/myProducts",
+							"host": [
+								"{{local}}users"
+							],
+							"path": [
+								"myProducts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Auction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJyQGdtYWlsLmNvbSIsImlhdCI6MTcyMTk3NzAyNywiZXhwIjoxNzIyMDYzNDI3fQ.0GA9iDAXLqJbBo-z4yuhJn_Lxjd49v3Zm60y3WloOrsTFnxUnTFYnyRws3ag0xY8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{local}}users/myBid",
+							"host": [
+								"{{local}}users"
+							],
+							"path": [
+								"myBid"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzQGdtYWlsLmNvbSIsImlhdCI6MTcyMTk3NTc1OSwiZXhwIjoxNzIyMDYyMTU5fQ.11WpXscUezjmLhEqDjd8lgx1yDaZLgmIQDXXNWXmiB75IkhJHvO-j1LIad_K_pb2",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "local",
+			"value": "localhost:8080/api/v1/",
+			"type": "string"
+		},
+		{
+			"key": "token_owner",
+			"value": "",
+			"type": "string",
+			"disabled": true
+		}
+	]
+}
